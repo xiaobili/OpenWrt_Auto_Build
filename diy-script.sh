@@ -23,18 +23,17 @@ function git_sparse_clone() {
 }
 
 # 添加额外插件
+## OAF
 git clone --depth=1 https://github.com/destan19/OpenAppFilter package/OpenAppFilter
-
-# 科学上网插件
+## Openlist
+git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist
+## 科学上网插件
 sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
 sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
 
 
 # 更改 Argon 主题背景
 cp -f $GITHUB_WORKSPACE/images/bg1.jpg feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/img/bg1.jpg
-
-# Openlist
-git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist
 
 
 # x86 型号只显示 CPU 型号
