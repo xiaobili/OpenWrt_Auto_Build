@@ -27,9 +27,6 @@ function git_sparse_clone() {
 git clone --depth=1 https://github.com/destan19/OpenAppFilter package/OpenAppFilter
 ## Openlist
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist
-## 科学上网插件
-sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
-sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
 
 
 # 更改 Argon 主题背景
@@ -52,6 +49,3 @@ sed -i "s/${orig_version}/R${date_version} by billyJR/g" package/lean/default-se
 
 # 修复 armv8 设备 xfsprogs 报错
 # sed -i 's/TARGET_CFLAGS.*/TARGET_CFLAGS += -DHAVE_MAP_SYNC -D_LARGEFILE64_SOURCE/g' feeds/packages/utils/xfsprogs/Makefile
-
-./scripts/feeds update -a
-./scripts/feeds install -a
