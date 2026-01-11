@@ -11,13 +11,12 @@ jobs:
       - name: Generate Changelog
         run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
       - name: Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
             name: 'OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}'
-            allowUpdates: true
-            tag: '${{ env.FIRMWARE_TAG }} for test'
+            tag_name: '${{ env.FIRMWARE_TAG }} for test'
             token: ${{ secrets.GH_TOKEN }}
-            artifacts: ${{ github.workspace }}/*
+            files: ${{ github.workspace }}/*
             body: |
                 **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
                 ### 📒 固件信息
