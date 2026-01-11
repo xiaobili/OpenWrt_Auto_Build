@@ -11,9 +11,15 @@ jobs:
       - name: Generate Changelog
         run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: 'demoFSDF'
-          body_path: release.txt
-          files: ${{ github.workspace }}/*
-          token: ${{ secrets.GH_TOKEN }}
+            name: 'OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}'
+            allowUpdates: true
+            tag: '${{ env.FIRMWARE_TAG }} for test'
+            token: ${{ secrets.GH_TOKEN }}
+            artifacts: ${{ github.workspace }}/*
+            body: |
+                **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
+                ### 📒 固件信息
+                - 💻 平台架构: 'x86_64'
+                - ⚽ 固件源码: 'openwrt'
