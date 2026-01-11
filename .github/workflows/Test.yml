@@ -13,12 +13,12 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-            name: 'OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}'
-            tag_name: '${{ env.FIRMWARE_TAG }} for test'
+            name: 'OpenWrt Firmware'
+            tag_name:  for test'
             token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/*
             body: |
-                **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
+                **This is OpenWrt Firmware for **
                 ### 📒 固件信息
                 - 💻 平台架构: 'x86_64'
                 - ⚽ 固件源码: 'openwrt'
