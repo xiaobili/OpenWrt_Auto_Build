@@ -10,12 +10,11 @@ jobs:
       - name: Generate Changelog
         run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
       - name: Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        
         with:
             name: 'OpenWrt Firmware'
-            tag_name:  'for test'
+            token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/configs/x86_64.config
             body: |
                 **This is OpenWrt Firmware for **fasdf
