@@ -222,7 +222,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         name: R${{ steps.date.output.date }} for ${{ env.FIRMWARE_TAG }}
-        tag_name: R${{ steps.date.output.date }} for ${{ env.FIRMWARE_TAG }}
+        tag_name: R${{ steps.date.output.date }}_${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GH_TOKEN }}
         files: ${{ env.FIRMWARE_PATH }}/*
         body: |
