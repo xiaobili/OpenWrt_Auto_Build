@@ -10,11 +10,10 @@ env:
   REPO_BRANCH: master
   CONFIG_FILE: configs/x86_64-mini.config
   DIY_SCRIPT: diy-mini.sh
-  CLASH_KERNEL: amd64
   CACHE_TOOLCHAIN: true
   UPLOAD_BIN_DIR: false
   FIRMWARE_RELEASE: true
-  FIRMWARE_TAG: X86_64
+  FIRMWARE_TAG: X86_64_Mini
   TZ: Asia/Shanghai
 
 jobs:
@@ -22,10 +21,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout
+    - name: 检查
       uses: actions/checkout@main
 
-    - name: Check Server Performance
+    - name: 检查机器性能
       run: |
         echo "警告⚠"
         echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
@@ -40,12 +39,63 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-    - name: Initialization Environment
+    - name: 释放磁盘空间
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: false
+        
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+
+    - name: 清理前
+      run: |
+        set -xe
+        df -H
+
+    - name: 清理中
+      run: |
+        set -xe
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        sudo rm -rf /opt/hostedtoolcache/
+        sudo rm -rf /usr/local/graalvm/
+        sudo rm -rf /usr/local/share/powershell
+        sudo rm -rf /usr/local/share/chromium
+        sudo rm -rf /usr/local/lib/node_modules
+        sudo docker image prune --all --force
+        
+        APT_PARAMS='sudo apt -y -qq -o=Dpkg::Use-Pty=0'
+        $APT_PARAMS remove -y '^dotnet-.*'
+        $APT_PARAMS remove -y '^llvm-.*'
+        $APT_PARAMS remove -y '^php.*'
+        $APT_PARAMS remove -y '^mongodb-.*'
+        $APT_PARAMS remove -y '^mysql-.*'
+        $APT_PARAMS remove -y azure-cli google-* google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri
+        $APT_PARAMS autoremove --purge -y
+        $APT_PARAMS autoclean
+        $APT_PARAMS clean
+      
+    - name: 清理后
+      run: |
+        set -xe
+        df -H
+    - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        docker rmi $(docker images -q)
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
         sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
         sudo -E apt-get -y update
         sudo -E apt-get -y install rename $(curl -fsSL is.gd/depends_ubuntu_2204)
@@ -54,7 +104,7 @@ jobs:
         sudo -E apt-get -y clean
         sudo timedatectl set-timezone "$TZ"
 
-    - name: Clone Source Code
+    - name: 克隆仓库
       run: |
         df -hT $GITHUB_WORKSPACE
         git clone $REPO_URL -b $REPO_BRANCH openwrt
@@ -69,7 +119,7 @@ jobs:
         COMMIT_HASH=$(git show -s --date=short --format="hash: %H")
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
-    - name: Generate Variables
+    - name: 设置环境变量
       run: |
         cp $CONFIG_FILE $OPENWRT_PATH/.config
         cd $OPENWRT_PATH
@@ -81,7 +131,7 @@ jobs:
         DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
         echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
 
-    - name: Cache Toolchain
+    - name: 缓存工具链
       if: env.CACHE_TOOLCHAIN == 'true'
       uses: HiGarfield/cachewrtbuild@main
       with:
@@ -89,22 +139,25 @@ jobs:
         mixkey: ${{ env.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}
         prefix: ${{ env.OPENWRT_PATH }}
 
-    - name: Install Feeds
+    - name: 安装 Feeds
       run: |
+        chmod +x $DIY_SCRIPT_BEFORE
         cd $OPENWRT_PATH
+        $GITHUB_WORKSPACE/$DIY_SCRIPT_BEFORE
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: Load Custom Configuration
+    - name: 加载自定义配置
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRT_PATH/.config
-        chmod +x $GITHUB_WORKSPACE/scripts/*.sh
         chmod +x $DIY_SCRIPT
+        chmod +x $WORKSPACE/scripts/*.sh
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT
+        $GITHUB_WORKSPACE/scripts/init-settings.sh
 
-    - name: Download DL Package
+    - name:  下载依赖
       run: |
         cd $OPENWRT_PATH
         make defconfig
@@ -112,7 +165,7 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile Firmware
+    - name: 编译固件
       id: compile
       run: |
         cd $OPENWRT_PATH
@@ -124,18 +177,18 @@ jobs:
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "FILE_DATE=$(date +"%Y.%m.%d")" >> $GITHUB_ENV
 
-    - name: Check Space Usage
+    - name: 检查磁盘空间
       if: (!cancelled())
       run: df -hT
 
-    - name: Upload Bin Directory
+    - name: 上传二进制文件
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       uses: actions/upload-artifact@main
       with:
         name: ${{ env.SOURCE_REPO }}-bin-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
 
-    - name: Organize Files
+    - name: 整理文件
       if: steps.compile.outputs.status == 'success'
       run: |
         cd $OPENWRT_PATH/bin/targets/*/*
@@ -145,22 +198,21 @@ jobs:
         rename 's/^/mini-/' *
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
 
-    - name: Upload Firmware To Artifact
+    - name: 上床固件至 Artifact
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE != 'true'
       uses: actions/upload-artifact@main
       with:
         name: ${{ env.SOURCE_REPO }}-firmware-${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}-${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE_PATH }}
 
-    - name: Upload Firmware To Release
+    - name: 上传固件至 Release
       if: steps.compile.outputs.status == 'success' && env.FIRMWARE_RELEASE == 'true'
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v2
       with:
-        name: R${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
-        allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*
+        name: R${{ steps.date.output.date }}_${{ env.FIRMWARE_TAG }}
+        tag_name: R${{ steps.date.output.date }}_${{ env.FIRMWARE_TAG }}
+        token: ${{ secrets.GH_TOKEN }}
+        files: ${{ env.FIRMWARE_PATH }}/*
         body: |
           **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
           ### 📒 固件信息
@@ -169,7 +221,7 @@ jobs:
           - 💝 源码分支: ${{ env.REPO_BRANCH }}
           - 🚀 内核版本: ${{ env.KERNEL }}
           - 🌐 默认地址: 192.168.1.1
-          - 🔑 默认密码: password
+          - 🔑 默认密码: 
           ### 🧊 固件版本
           - 固件编译前最后一次➦[主源码](${{ env.REPO_URL }})更新记录
           - ${{ env.COMMIT_AUTHOR }}
