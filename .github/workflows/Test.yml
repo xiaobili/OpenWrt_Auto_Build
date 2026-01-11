@@ -12,7 +12,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-            name: 'aaabbb'
+            name: 'aaabbb fasd fads'
             tag_name: 'fortest-fsa-ff'
             token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/configs/x86_64.config
