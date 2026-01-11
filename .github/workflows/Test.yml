@@ -13,7 +13,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
             name: 'aaabbb'
-            tag_name: 'v1.0.0'
+            tag_name: 'fortest'
             token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/configs/x86_64.config
             body: |
