@@ -156,7 +156,6 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/scripts/*
         cd $OPENWRT_PATH
         $GITHUB_WORKSPACE/$DIY_SCRIPT
-        $GITHUB_WORKSPACE/scripts/init-settings.sh
 
     - name:  下载依赖
       run: |
