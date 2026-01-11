@@ -14,7 +14,7 @@ jobs:
         with:
             name: 'aaabbb'
             tag_name: 'v1.0.0'
-            token: ${{ secrets.GITHUB_TOKEN }}
+            token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/configs/x86_64.config
             body: |
                 **This is OpenWrt Firmware for **fasdf
