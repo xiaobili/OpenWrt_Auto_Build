@@ -15,7 +15,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
             name: 'OpenWrt Firmware'
-            tag_name:  for test'
+            tag_name:  'for test'
             files: ${{ github.workspace }}/configs/x86_64.config
             body: |
                 **This is OpenWrt Firmware for **fasdf
