@@ -89,7 +89,13 @@ jobs:
         $APT_PARAMS autoclean
         $APT_PARAMS clean
       
-    - name: 清理后
+    - name: 合并磁盘
+      uses: easimon/maximize-build-space@master
+      with:
+        swap-size-mb: 1024
+        temp-reserve-mb: 100
+        root-reserve-mb: 1024
+    - name: 磁盘信息
       run: |
         set -xe
         df -H

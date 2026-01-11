@@ -86,11 +86,7 @@ jobs:
         $APT_PARAMS autoclean
         $APT_PARAMS clean
       
-    - name: 清理后
-      run: |
-        set -xe
-        df -H
-    
+  
     - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
