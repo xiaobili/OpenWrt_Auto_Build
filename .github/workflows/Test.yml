@@ -19,7 +19,7 @@ jobs:
             token: ${{ secrets.GH_TOKEN }}
             files: ${{ github.workspace }}/configs/x86_64.config
             body: |
-                **This is OpenWrt Firmware for **
+                **This is OpenWrt Firmware for **fasdf
                 ### 📒 固件信息
                 - 💻 平台架构: 'x86_64'
                 - ⚽ 固件源码: 'openwrt'
