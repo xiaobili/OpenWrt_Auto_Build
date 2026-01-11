@@ -1,11 +1,11 @@
 name: Main
-permissions:
-  contents: write
 on: push
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+        contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
