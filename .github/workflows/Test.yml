@@ -16,7 +16,7 @@ jobs:
             name: 'OpenWrt Firmware'
             tag_name:  for test'
             token: ${{ secrets.GH_TOKEN }}
-            files: ${{ github.workspace }}/*
+            files: ${{ github.workspace }}/diy-*
             body: |
                 **This is OpenWrt Firmware for **
                 ### 📒 固件信息
